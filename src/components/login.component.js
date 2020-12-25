@@ -27,19 +27,15 @@ function Login(props) {
         axios.get('https://jsonplaceholder.typicode.com/users', { username: username.value, password: password.value }).then(response => {
             setLoading(false);
             //console.log(response);
-            var i=0;
-
-            for (i = 0; i < response.length; i++) {
-                //console.log(i);
-                console.log(response[i]);
-            } 
+            
 
             //setUserSession(response.data.token, response.data.user);
             props.history.push('/dashboard');
         }).catch(error => {
             setLoading(false);
-            if (error.response.status === 401) setError(error.response.data.message);
-            else setError("Something went wrong. Please try again later.");
+            console.log(error);
+            //if (error.response.status === 401) setError(error.response.data.message);
+            //else setError("Something went wrong. Please try again later.");
         });
     }
    
@@ -49,12 +45,12 @@ function Login(props) {
 
         <div className="form-group">
             <label>Email address</label>
-            <input type="email" className="form-control" placeholder="Enter email" />
+            <input name="username" type="email" className="form-control" placeholder="Enter email" />
         </div>
 
         <div className="form-group">
             <label>Password</label>
-            <input type="password" className="form-control" placeholder="Enter password" />
+            <input name="password" type="password" className="form-control" placeholder="Enter password" />
         </div>
 
         <div className="form-group">

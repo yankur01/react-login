@@ -1,41 +1,57 @@
-import React from 'react';
-import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
-import './App.css';
-import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
-
-import Login from "./components/login.component";
-import SignUp from "./components/signup.component";
-
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter, Switch, Route, NavLink } from 'react-router-dom';
+import axios from 'axios';
+ 
+import Login from './Login';
+import Dashboard from './Dashboard';
+import Home from './Home';
+ 
+import PrivateRoute from './Utils/PrivateRoute';
+import PublicRoute from './Utils/PublicRoute';
+import { getToken, removeUserSession, setUserSession } from './Utils/Common';
+ 
 function App() {
-  return (<Router>
+  const [authLoading, setAuthLoading] = useState(true);
+ 
+  useEffect(() => {
+    const token = getToken();
+    if (!token) {
+      return;
+    }
+ 
+    axios.get(`http://localhost:4000/verifyToken?token=${token}`).then(response => {
+      setUserSession(response.data.token, response.data.user);
+      setAuthLoading(false);
+    }).catch(error => {
+      removeUserSession();
+      setAuthLoading(false);
+    });
+  }, []);
+ 
+  if (authLoading && getToken()) {
+    return <div className="content">Checking Authentication...</div>
+  }
+ 
+  return (
     <div className="App">
-      <nav className="navbar navbar-expand-lg navbar-light fixed-top">
-        <div className="container">
-          
-          <div className="collapse navbar-collapse" id="navbarTogglerDemo02">
-            <ul className="navbar-nav ml-auto">
-              <li className="nav-item">
-                <Link className="nav-link" to={"/sign-in"}>Login</Link>
-              </li>
-              <li className="nav-item">
-                <Link className="nav-link" to={"/sign-up"}>Sign up</Link>
-              </li>
-            </ul>
+      <BrowserRouter>
+        <div>
+          <div className="header">
+            <NavLink exact activeClassName="active" to="/">Home</NavLink>
+            <NavLink activeClassName="active" to="/login">Login</NavLink><small>(Access without token only)</small>
+            <NavLink activeClassName="active" to="/dashboard">Dashboard</NavLink><small>(Access with token only)</small>
+          </div>
+          <div className="content">
+            <Switch>
+              <Route exact path="/" component={Home} />
+              <PublicRoute path="/login" component={Login} />
+              <PrivateRoute path="/dashboard" component={Dashboard} />
+            </Switch>
           </div>
         </div>
-      </nav>
-
-      <div className="auth-wrapper">
-        <div className="auth-inner">
-          <Switch>
-            <Route exact path='/' component={Login} />
-            <Route path="/sign-in" component={Login} />
-            <Route path="/sign-up" component={SignUp} />
-          </Switch>
-        </div>
-      </div>
-    </div></Router>
+      </BrowserRouter>
+    </div>
   );
 }
-
+ 
 export default App;
